@@ -1,0 +1,145 @@
+{
+	"RailwayLines": {
+		"RailwayLine": [
+			{
+				"LineNumber": "120A",
+				"LineName": "BP-Keleti->Szolnok",
+				"Service": [
+					{
+						"From": "Szolnok",
+						"To": "Budapest-Keleti",
+						"TrainNumber": "3320",
+						"DelayAmount": "3",
+						"TrainType": "InterCity"
+					},
+					{
+						"From": "Budapest-Keleti",
+						"To": "Sülysáp",
+						"TrainNumber": "3210",
+						"DelayAmount": "10",
+						"TrainType": "Passenger"
+					}
+				]
+			},
+			{
+				"LineNumber": "100A",
+				"LineName": "BP-Nyugati->Szolnok",
+				"Service": {
+					"From": "BP-Nyugati",
+					"To": "Cegléd",
+					"TrainNumber": "4320",
+					"DelayAmount": "25",
+					"TrainType": "Passenger"
+				}
+			},
+			{
+				"LineNumber": "150A",
+				"LineName": "BP-Déli->Pusztaszabolcs",
+				"Service": [
+					{
+						"From": "BP-Déli",
+						"To": "Pusztaszabolcs",
+						"TrainNumber": "5501",
+						"DelayAmount": "5",
+						"TrainType": "Passenger"
+					},
+					{
+						"From": "Pusztaszabolcs",
+						"To": "BP-Déli",
+						"TrainNumber": "5502",
+						"DelayAmount": "7",
+						"TrainType": "Passenger"
+					}
+				]
+			},
+			{
+				"LineNumber": "200A",
+				"LineName": "Győr->Hegyeshalom",
+				"Service": {
+					"From": "Győr",
+					"To": "Hegyeshalom",
+					"TrainNumber": "6610",
+					"DelayAmount": "2",
+					"TrainType": "Regional"
+				}
+			},
+			{
+				"LineNumber": "300A",
+				"LineName": "Debrecen->Nyíregyháza",
+				"Service": {
+					"From": "Debrecen",
+					"To": "Nyíregyháza",
+					"TrainNumber": "7777",
+					"DelayAmount": "0",
+					"TrainType": "InterCity"
+				}
+			},
+			{
+				"LineNumber": "400A",
+				"LineName": "Miskolc->Ózd",
+				"Service": {
+					"From": "Miskolc",
+					"To": "Ózd",
+					"TrainNumber": "8888",
+					"DelayAmount": "15",
+					"TrainType": "Express"
+				}
+			},
+			{
+				"LineNumber": "500A",
+				"LineName": "Pécs->Szigetvár",
+				"Service": {
+					"From": "Pécs",
+					"To": "Szigetvár",
+					"TrainNumber": "9999",
+					"DelayAmount": "8",
+					"TrainType": "Regional"
+				}
+			},
+			{
+				"LineNumber": "600A",
+				"LineName": "Szeged->Hódmezővásárhely",
+				"Service": {
+					"From": "Szeged",
+					"To": "Hódmezővásárhely",
+					"TrainNumber": "1234",
+					"DelayAmount": "1",
+					"TrainType": "Passenger"
+				}
+			},
+			{
+				"LineNumber": "700A",
+				"LineName": "Szolnok->Békéscsaba",
+				"Service": {
+					"From": "Szolnok",
+					"To": "Békéscsaba",
+					"TrainNumber": "5678",
+					"DelayAmount": "12",
+					"TrainType": "InterCity"
+				}
+			},
+			{
+				"LineNumber": "800A",
+				"LineName": "Kecskemét->Szentes",
+				"Service": {
+					"From": "Kecskemét",
+					"To": "Szentes",
+					"TrainNumber": "8765",
+					"DelayAmount": "9",
+					"TrainType": "Express"
+				}
+			},
+			{
+				"LineNumber": "900A",
+				"LineName": "Sopron->Szombathely",
+				"Service": {
+					"From": "Sopron",
+					"To": "Szombathely",
+					"TrainNumber": "1010",
+					"DelayAmount": "4",
+					"TrainType": "Regional"
+				}
+			}
+		]
+	}
+}
