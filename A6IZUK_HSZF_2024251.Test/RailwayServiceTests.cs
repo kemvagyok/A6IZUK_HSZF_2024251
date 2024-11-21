@@ -8,7 +8,7 @@ namespace A6IZUK_HSZF_2024251.Test
     [TestFixture]
     public class RailwayDataTests
     {
-
+        //Ellenőrzi, hogy létezik, és jó-e a fájl
         [Test]
         public void RailwayDataTestLoadingXML1()
         {
@@ -16,6 +16,7 @@ namespace A6IZUK_HSZF_2024251.Test
             List<RailwayLine> railwayLines = XmlDataLoader.LoadRailwayLinesFromXml(filePath);
             Assert.That(railwayLines.Count(), !Is.EqualTo(0)); 
         }
+        //Ellenőrzi, hogy a fájl struktúrája jó-e
         [Test]
         public void RailwayDataTestLoadingXML2()
         {
@@ -25,12 +26,15 @@ namespace A6IZUK_HSZF_2024251.Test
             Assert.That(railwayLines[0].LineNumber, Is.EqualTo(expectedLineNumber));
         }
         [Test]
+        //Ellenőrzi, hogy létezik, és jó-e a fájl
         public void RailwayDataTestLoadingJSON1()
         {
             string filePath = "RailwayLines.json";
             List<RailwayLine> railwayLines = JsonDataLoader.LoadRailwayLinesFromJson(filePath);
             Assert.That(railwayLines.Count(), !Is.EqualTo(0));
         }
+        //Ellenőrzi, hogy a fájl struktúrája jó-e
+
         [Test]
         public void RailwayDataTestLoadingJSON2()
         {
@@ -49,6 +53,7 @@ namespace A6IZUK_HSZF_2024251.Test
 
         Service service = new Service { TrainNumber = 1, From = "Hagymaföld", To = "Krumpliföld", DelayAmount = 4, TrainType = "Intercity" };
 
+        //Ellenőrzi, hogy jó-e a RailWayService (vasútvonal) hozzáadási funkciója
         [Test]
         public void RailWayServiceRailwayLineAddTest()
         {
@@ -56,6 +61,7 @@ namespace A6IZUK_HSZF_2024251.Test
             railWayService.AddRailwayLines(line);
             Assert.That(railWayService.GetAllRailwayLines(), !Is.EqualTo(0));
         }
+        //Ellenőrzi, hogy jó-e a RailWayService (járat) hozzáadási funkciója
         [Test]
         public void RailWayServiceAddTest()
         {

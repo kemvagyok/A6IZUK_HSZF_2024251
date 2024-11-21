@@ -144,10 +144,10 @@ class Program
                     {
                         Console.WriteLine("TYPE PROPERTY VALUE\n");
                         Console.WriteLine("RAILWAY" +
-                        "\n\t[LINEUMBER, LINENAME]\n");
+                        "\n\t[LINENUMBER, LINENAME]\n");
                         Console.WriteLine("SERVICE" +
                             "\n\t[FROM, TO, TRAINNUMBER, DELAYAMOUNT, TRAINTYPE]\n");
-                        Console.WriteLine("IF YOU WANT EXIT FROM THIS COMMAND:" +
+                        Console.WriteLine("IF YOU WANT EXIT FROM THIS COMMAND OR FINISH THE WRITING AND SEE THE RESULT:" +
                             "\n\tEXIT\n");
                         string[] splittedCommands = Console.ReadLine().Split(' ');
                         if (splittedCommands[0] == "EXIT")

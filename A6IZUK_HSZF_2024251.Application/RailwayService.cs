@@ -228,8 +228,12 @@ namespace A6IZUK_HSZF_2024251.Application
 
             try
             {
-                outputPath += "statistics.txt";
-                System.IO.File.WriteAllLines(outputPath, statistics);
+                string currentDirectory = Directory.GetCurrentDirectory();
+                string newDirectoryPath = Path.Combine(currentDirectory, outputPath);
+                if (!Directory.Exists(newDirectoryPath))
+                    Directory.CreateDirectory(newDirectoryPath);
+                newDirectoryPath += "/statistics.txt";
+                System.IO.File.WriteAllLines(newDirectoryPath, statistics);
                 Console.WriteLine("Statistics saved successfully to " + outputPath);
             }
             catch (Exception ex)
