@@ -94,6 +94,7 @@ namespace A6IZUK_HSZF_2024251.Application
                         {
                             foreach(var railwayLine in _railwayLines)
                             {
+
                                 var selectedList = railwayLine.Services
                                 .Where(x =>
                                 {
