@@ -9,14 +9,14 @@ class Program
 {
      static void Main(string[] args)
     {
-        // Az XML fájl betöltése
+        // Az XML, vagy JSON fájl betöltése
         string filePath;        
         List<RailwayLine> railwayLines;
 
-        Console.WriteLine("Üdv a NVSZ programban!\nMelyik formátumból kiván kiolvasni az adatot?\n1. JSON\n2. XML");
-        int dataFormute = int.Parse(Console.ReadLine());
+        Console.WriteLine("Welcome to the NVSZ programme!\nWhich format do you want to import the data from?\n1. JSON\n2. XML");
+        int dataFormatChoosen = int.Parse(Console.ReadLine());
 
-        switch(dataFormute)
+        switch(dataFormatChoosen)
         {
             case 1:
                 filePath = "RailwayLines.json";
@@ -57,6 +57,7 @@ class Program
             var choice = Console.ReadLine();
             switch (choice)
             {
+
                 case "1":
                     Console.Write("Enter Line Number: ");
                     var lineNumber = Console.ReadLine();
@@ -82,7 +83,7 @@ class Program
 
                     Console.WriteLine("Which railway? (number)");
                     string searchedLine = Console.ReadLine();
-                    RailwayLine railwayLine = railwayService.GetRailwayLineByLineNumber(searchedLine);
+                    RailwayLine railwayLine = railwayService.GetAllRailwayLines().FirstOrDefault(r => r.LineNumber == searchedLine);
                     if(railwayLine==null)
                     {
                        Console.WriteLine("Invalid choice.");
@@ -104,12 +105,16 @@ class Program
 
                     if (commandParts != null && commandParts.Length == 3 && commandParts[0].ToUpper() == "RAILWAY")
                     {
-                        ModifyRailway(railwayLine, commandParts[1], commandParts[2]);
+                        railwayLine = railwayService.ModifyRailway(railwayLine, commandParts[1], commandParts[2]);
                     }
                     else if (commandParts != null && commandParts.Length == 4 && (commandParts[0] =="SERVICE" && int.TryParse(commandParts[1], out _)))
                     {
-                        int serviceNumber = int.Parse(commandParts[1]);
-                        ModifyService(railwayLine, serviceNumber, commandParts[2], commandParts[3]);
+                        int serviceIndex = int.Parse(commandParts[1]);
+                        Service selectedService = railwayLine.Services.ElementAt(serviceIndex);
+                        if(selectedService != null)
+                            railwayLine.Services[serviceIndex] = railwayService.ModifyService(selectedService, serviceIndex, commandParts[2], commandParts[3]);
+                        else
+                            Console.WriteLine("Service is not found! Wrong number!");
                     }
                     else
                     {
@@ -132,14 +137,43 @@ class Program
                     }
                     break;
                 case "5":
-                    Console.WriteLine("RAILWAY" +
+                    List<CommandSearch> commandSearches = new List<CommandSearch>();
+
+                    bool seachRunning = true;
+                    while (seachRunning)
+                    {
+                        Console.WriteLine("TYPE PROPERTY VALUE\n");
+                        Console.WriteLine("RAILWAY" +
                         "\n\t[LINEUMBER, LINENAME]\n");
-                    Console.WriteLine("SERVICE" +
-                        "\n\t[FROM, TO, TRAINNUMBER, DELAYAMOUNT, TRAINTYPE]\n");
-                    //TODO: BE KELL FEJEZNED EZT (KERESES)
+                        Console.WriteLine("SERVICE" +
+                            "\n\t[FROM, TO, TRAINNUMBER, DELAYAMOUNT, TRAINTYPE]\n");
+                        Console.WriteLine("IF YOU WANT EXIT FROM THIS COMMAND:" +
+                            "\n\tEXIT\n");
+                        string[] splittedCommands = Console.ReadLine().Split(' ');
+                        if (splittedCommands[0] == "EXIT")
+                        {
+                            seachRunning = false;
+                            if(commandSearches.Count > 0)
+                            {
+                                var selectedList = railwayService.SearchinRailway(commandSearches);
+                                foreach (var line in selectedList)
+                                {
+                                    Console.WriteLine($"{line.LineNumber} - {line.LineName}");
+                                    foreach (var service in line.Services)
+                                    {
+                                        Console.WriteLine($"   Train {service.TrainNumber} FROM {service.From} TO {service.To}, DELAY: {service.DelayAmount} minutes");
+                                    }
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            CommandSearch search = new CommandSearch { Type = splittedCommands[0], Property = splittedCommands[1], Value = splittedCommands[2] };
+                            commandSearches.Add(search);
+                        }
+                    }
                     break;
-
-
                 case "6":
                     Console.Write("Enter output path for statistics file: ");
                     var outputPath = Console.ReadLine();
@@ -162,62 +196,5 @@ class Program
         services.AddScoped<IRailwayService, RailwayService>();
     }
 
-    private static RailwayLine ModifyRailway(RailwayLine railwayLine, string property, string value)
-    {
-            if (property.Equals("LINENAME", StringComparison.OrdinalIgnoreCase))
-            { 
-                railwayLine.LineName = value;
-                Console.WriteLine($"Railway Line Name modified to: {value}");
-            }
-            else if (property.Equals("LINENUMBER", StringComparison.OrdinalIgnoreCase))
-            {
-                railwayLine.LineNumber = value;
-                Console.WriteLine($"Railway Line Number modified to: {value}");
-            }
-            else
-            {
-                Console.WriteLine($"Invalid railway property: {property}");
-            }
-        return railwayLine;
-    }
-
-
-    private static RailwayLine ModifyService(RailwayLine railwayLine, int index, string property, string value)
-    {
-
-        var service = railwayLine.Services.ElementAt(index);
-        if (service != null)
-        {
-            if (property.Equals("FROM", StringComparison.OrdinalIgnoreCase))
-            {
-                service.From = value;
-                Console.WriteLine($"Service From modified to: {value}");
-            }
-            else if (property.Equals("TO", StringComparison.OrdinalIgnoreCase))
-            {
-                service.To = value;
-                Console.WriteLine($"Service To modified to: {value}");
-            }
-            else if (property.Equals("DELAYAMOUNT", StringComparison.OrdinalIgnoreCase) && int.TryParse(value, out int delay))
-            {
-                service.DelayAmount = delay;
-                Console.WriteLine($"Service DelayAmount modified to: {delay}");
-            }
-            else if (property.Equals("TRAINTYPE", StringComparison.OrdinalIgnoreCase))
-            {
-                service.TrainType = value;
-                Console.WriteLine($"Service TrainType modified to: {value}");
-            }
-            else
-            {
-                Console.WriteLine($"Invalid service property: {property}");
-            }
-            return railwayLine;
-        }
-
-        Console.WriteLine("Service not found with the specified train number.");
-        return railwayLine;
-
-    }
 }
 
