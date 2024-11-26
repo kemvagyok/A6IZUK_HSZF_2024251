@@ -1,34 +1,49 @@
 ﻿using A6IZUK_HSZF_2024251.Model;
-using System.Collections.Generic;
+using A6IZUK_HSZF_2024251.Persistence.MsSql;
 
 namespace A6IZUK_HSZF_2024251.Application
 {
     public class RailwayService : IRailwayService
     {
 
-        private readonly List<RailwayLine> _railwayLines = new List<RailwayLine>();
+        private readonly IRailWayLineRepository railWayLineRepository;
 
-
-        public void AddRailwayLines(RailwayLine line)
+        public RailwayService(IRailWayLineRepository railWayLineRepository) 
         {
-            var existingLine = _railwayLines.FirstOrDefault(r => r.LineNumber == line.LineNumber);
+            this.railWayLineRepository = railWayLineRepository;
+        }
+
+        public void setAllRailwayLines(List<RailwayLineRaw> lines)
+        {
+            railWayLineRepository.LoadFromRawData(lines);
+        }
+        public void AddRailwayLine(RailwayLine line)
+        {
+            var existingLine = railWayLineRepository.GetByRailwayLineByLineNumber(line.LineNumber);
 
             if (existingLine == null)
             {
-                _railwayLines.Add(line);
+                railWayLineRepository.AddRailwayLine(line);         
             }
             else
             {
-                foreach (var service in line.Services)
+                if(existingLine.Services != null)
                 {
-                    if (!existingLine.Services.Any(s => s.TrainNumber == service.TrainNumber))
+                    foreach (var service in line.Services)
                     {
-                        existingLine.Services.Add(service);
+                        if (!existingLine.Services.Any(s => s.TrainNumber == service.TrainNumber))
+                        {
+                            railWayLineRepository.AddRailwayService(service, line.Id);
+                        }
+                        else
+                        {
+                            Console.WriteLine("The number of the train exits!");
+                        }
                     }
-                    else
-                    {
-                        Console.WriteLine("The number of the train exits!");
-                    }
+                }
+                else
+                {
+                    Console.WriteLine("The railway is exits! Nothing is added!");
                 }
             }
              
@@ -36,7 +51,7 @@ namespace A6IZUK_HSZF_2024251.Application
 
         public void AddServiceToRailWayLine(string lineNumber, Service service)
         {
-            var existingLine = _railwayLines.FirstOrDefault(r => r.LineNumber == lineNumber);
+            var existingLine = railWayLineRepository.GetByRailwayLineByLineNumber(lineNumber);
 
             if (existingLine == null)
             {
@@ -44,9 +59,9 @@ namespace A6IZUK_HSZF_2024251.Application
             }
             else
             {
-                if (!existingLine.Services.Any(s => s.TrainNumber == service.TrainNumber))
+                if (existingLine.Services==null || !existingLine.Services.Any(s => s.TrainNumber == service.TrainNumber))
                 {
-                    existingLine.Services.Add(service);
+                    railWayLineRepository.AddRailwayService(service, existingLine.Id);
                 }
                 else
                 {
@@ -58,84 +73,23 @@ namespace A6IZUK_HSZF_2024251.Application
 
         public List<RailwayLine>  GetAllRailwayLines()
         {
-            return _railwayLines;
+            return railWayLineRepository.GetAll().ToList();
         }
         
         public List<RailwayLine> SearchinRailway(List<CommandSearch> commands)
-        {
-            List<RailwayLine> railwayLines = new List<RailwayLine>();
-
-            List<string> commandsofRailway = new List<string>() { "LINENUMBER", "LINENAME" };
-            List<string> commandsofService = new List<string>() { "FROM", "TO", "TRAINNUMBER", "DELAYAMOUNT", "TRAINTYPE" };
-            foreach (var command in commands)
-            {
-                if(command.Type == "RAILWAY")
-                {
-                    foreach (var commandProperty in commandsofRailway)
-                    if (command.Property== commandProperty)
-                    {
-                            var selectedList = _railwayLines
-                                .Where(x =>
-                                {
-                                    if (command.Property == "LINENAME") return x.LineName == command.Value;
-                                    if (command.Property == "LINENUMBER") return x.LineNumber.ToString() == command.Value;
-                                    return false;
-                                })
-                                .ToList();
-                            if(selectedList is not null)
-                                railwayLines.AddRange(selectedList);
-                        }
-                   
-                }
-                if (command.Type == "SERVICE")
-                {
-                    foreach (var commandProperty in commandsofService)
-                        if (command.Property == commandProperty)
-                        {
-                            foreach(var railwayLine in _railwayLines)
-                            {
-
-                                var selectedList = railwayLine.Services
-                                .Where(x =>
-                                {
-                                    if (command.Property == "FROM") return x.From == command.Value;
-                                    if (command.Property == "TO") return x.To == command.Value;
-                                    if (command.Property == "TRAINNUMBER") return x.TrainNumber.ToString() == command.Value;
-                                    if (command.Property == "DELAYAMOUNT") return x.DelayAmount <= int.Parse(command.Value);
-                                    if (command.Property == "TRAINTYPE") return x.TrainType == command.Value;
-
-                                    return false;
-                                })
-                                .ToList();
-
-                                if (selectedList.Count != 0)
-                                {
-                                    railwayLine.Services = selectedList ;           
-                                    railwayLines.Add(railwayLine);
-                                }
-
-                            }
-                        }
-                }
-            }
-
-            return railwayLines;
+        {            
+            return railWayLineRepository.SearchinRailway(commands);
         }
 
 
 
         public void UpdateRailwayLine(RailwayLine line)
         {
-            var existingLine = _railwayLines.FirstOrDefault(r => r.LineNumber == line.LineNumber);
+            var existingLine = railWayLineRepository.GetByRailwayLine(line.Id);
             if (existingLine != null)
-            {
-                existingLine.LineNumber = line.LineNumber;
-                existingLine.LineName = line.LineName;
-                existingLine.Services = line.Services;
-            }
-            
+                railWayLineRepository.UpdateRailwayLine(line);
         }
-        public RailwayLine ModifyRailway(RailwayLine railwayLine, string property, string value)
+        public void ModifyRailway(RailwayLine railwayLine, string property, string value)
         {
             if (property.Equals("LINENAME", StringComparison.OrdinalIgnoreCase))
             {
@@ -151,12 +105,14 @@ namespace A6IZUK_HSZF_2024251.Application
             {
                 Console.WriteLine($"Invalid railway property: {property}");
             }
-            return railwayLine;
+            railWayLineRepository.UpdateRailwayLine(railwayLine);
         }
 
-        public Service ModifyService(Service service, int index, string property, string value)
+        public void ModifyService(RailwayLine railwayLine, int index, string property, string value)
         {
-
+            Service service = railwayLine.Services.ElementAt(index);
+            if (service != null)
+            {
                 if (property.Equals("FROM", StringComparison.OrdinalIgnoreCase))
                 {
                     service.From = value;
@@ -182,26 +138,30 @@ namespace A6IZUK_HSZF_2024251.Application
                 {
                     Console.WriteLine($"Invalid service property: {property}");
                 }
-                return service;
-            
-
-        }
-
-
-        public void DeleteRailwayLine(string lineNumber)
-        {
-            var line = _railwayLines.FirstOrDefault(r => r.LineNumber == lineNumber);
-            if (line != null)
-            {
-                _railwayLines.Remove(line);
+                railWayLineRepository.UpdateRailwayLine(railwayLine);
             }
+            else
+            {
+                Console.WriteLine("Service is not found! Wrong number!");
+            }
+
+
+            }
+
+
+            public void DeleteRailwayLine(string lineNumber)
+        {
+            var line = railWayLineRepository.GetByRailwayLineByLineNumber(lineNumber);
+            if (line != null)
+                railWayLineRepository.DeleteRailwayLine(line.Id);
+            
             
         }
 
         public void CreateStatistics(string outputPath)
         {
             var statistics = new List<string>();
-            foreach (var line in _railwayLines)
+            foreach (var line in railWayLineRepository.GetAll())
             {
                 var onTimeCount = line.Services.Count(service => service.DelayAmount < 5);
                 var averageDelay = line.Services.Average(service => service.DelayAmount);

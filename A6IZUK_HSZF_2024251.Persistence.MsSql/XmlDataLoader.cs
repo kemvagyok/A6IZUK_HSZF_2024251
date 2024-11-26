@@ -10,26 +10,26 @@ namespace A6IZUK_HSZF_2024251.Persistence.MsSql
 {
     public static class XmlDataLoader
     {
-        public static List<RailwayLine> LoadRailwayLinesFromXml(string filePath)
+        public static List<RailwayLineRaw> LoadRailwayLinesFromXml(string filePath)
         {
 
-            var railwayLines = new List<RailwayLine>();
+            var railwayLines = new List<RailwayLineRaw>();
             try
             {
                 XDocument doc = XDocument.Load(filePath);
 
                 foreach (var lineElement in doc.Descendants("RailwayLine"))
                 {
-                    var railwayLine = new RailwayLine
+                    var railwayLine = new RailwayLineRaw
                     {
                         LineNumber = lineElement.Element("LineNumber")?.Value,
                         LineName = lineElement.Element("LineName")?.Value,
-                        Services = new List<Service>()
+                        Services = new List<ServiceRaw>()
                     };
 
                     foreach (var serviceElement in lineElement.Descendants("Service"))
                     {
-                        var service = new Service
+                        var service = new ServiceRaw
                         {
                             From = serviceElement.Element("From")?.Value,
                             To = serviceElement.Element("To")?.Value,

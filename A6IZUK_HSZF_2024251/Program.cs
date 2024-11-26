@@ -1,6 +1,7 @@
 ﻿using A6IZUK_HSZF_2024251.Application;
 using A6IZUK_HSZF_2024251.Model;
 using A6IZUK_HSZF_2024251.Persistence.MsSql;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -11,7 +12,7 @@ class Program
     {
         // Az XML, vagy JSON fájl betöltése
         string filePath;        
-        List<RailwayLine> railwayLines;
+        List<RailwayLineRaw> railwayLines;
 
         Console.WriteLine("Welcome to the NVSZ programme!\nWhich format do you want to import the data from?\n1. JSON\n2. XML");
         int dataFormatChoosen = int.Parse(Console.ReadLine());
@@ -26,21 +27,20 @@ class Program
                 railwayLines = XmlDataLoader.LoadRailwayLinesFromXml(filePath); break;
             default:
                 filePath = "RailwayLines.json";
-                railwayLines = new List<RailwayLine>();
+                railwayLines = new List<RailwayLineRaw>();
                 break;
         }
 
         var services = new ServiceCollection();
+
         ConfigureServices(services);
+
         var serviceProvider = services.BuildServiceProvider();
 
         var railwayService = serviceProvider.GetService<IRailwayService>();
+        railwayService.setAllRailwayLines(railwayLines);
 
         // Adatok hozzáadása az alkalmazás indulásakor
-        foreach (var line in railwayLines)
-        {
-            railwayService.AddRailwayLines(line);
-        }
 
         bool running = true;
         while (running)
@@ -65,17 +65,18 @@ class Program
                     var lineName = Console.ReadLine();
 
                     var newLine = new RailwayLine { LineNumber = lineNumber, LineName = lineName };
-                    railwayService.AddRailwayLines(newLine);
+                    railwayService.AddRailwayLine(newLine);
                     Console.WriteLine("Railway Line Added!");
                     break;
 
 
                 case "2":
+                    
                     Console.WriteLine("Which railway line (number?");
                     string givenLine = Console.ReadLine();
                     Console.WriteLine("[TRAIN NUMBER] [FROM] [TO] [DELAYAMOUNT] [TRAINTYPE]");
                     string[] newServiceSplitted = Console.ReadLine().Split(' ');
-                    Service newService = new Service { TrainNumber = int.Parse(newServiceSplitted[0]), From = newServiceSplitted[1], To = newServiceSplitted[2], DelayAmount = int.Parse(newServiceSplitted[3]), TrainType = newServiceSplitted[4] };
+                    Service newService = new Service { TrainNumber = int.Parse(newServiceSplitted[0]), From = newServiceSplitted[1], To = newServiceSplitted[2], DelayAmount = int.Parse(newServiceSplitted[3]), TrainType = newServiceSplitted[4]};
                     railwayService.AddServiceToRailWayLine(givenLine, newService);
                     break;
 
@@ -105,23 +106,18 @@ class Program
 
                     if (commandParts != null && commandParts.Length == 3 && commandParts[0].ToUpper() == "RAILWAY")
                     {
-                        railwayLine = railwayService.ModifyRailway(railwayLine, commandParts[1], commandParts[2]);
+                       railwayService.ModifyRailway(railwayLine, commandParts[1], commandParts[2]);
                     }
                     else if (commandParts != null && commandParts.Length == 4 && (commandParts[0] =="SERVICE" && int.TryParse(commandParts[1], out _)))
                     {
                         int serviceIndex = int.Parse(commandParts[1]);
-                        Service selectedService = railwayLine.Services.ElementAt(serviceIndex);
-                        if(selectedService != null)
-                            railwayLine.Services[serviceIndex] = railwayService.ModifyService(selectedService, serviceIndex, commandParts[2], commandParts[3]);
-                        else
-                            Console.WriteLine("Service is not found! Wrong number!");
+                         railwayService.ModifyService(railwayLine, serviceIndex, commandParts[2], commandParts[3]);
                     }
                     else
                     {
                         Console.WriteLine("Invalid input format.");
                     }
-               
-                    railwayService.UpdateRailwayLine(railwayLine);
+              
                     break;
 
 
@@ -130,9 +126,16 @@ class Program
                     foreach (var line in lines)
                     {
                         Console.WriteLine($"{line.LineNumber} - {line.LineName}");
-                        foreach (var service in line.Services)
+                        if (line.Services == null)
                         {
-                            Console.WriteLine($"   Train {service.TrainNumber} FROM {service.From} TO {service.To}, DELAY: {service.DelayAmount} minutes");
+                            Console.WriteLine($"  There is not services!");
+                        }
+                        else
+                        {
+                            foreach (var service in line.Services)
+                            {
+                                Console.WriteLine($"   Train {service.TrainNumber} FROM {service.From} TO {service.To}, DELAY: {service.DelayAmount} minutes");
+                            }
                         }
                     }
                     break;
@@ -193,7 +196,13 @@ class Program
 
     private static void ConfigureServices(ServiceCollection services)
     {
+        string connStr = @"Data Source=(LocalDB)\MSSQLLocalDB;Integrated Security=False;Initial Catalog=NVSZdb;MultipleActiveResultSets=true;Trusted_Connection=True;";
+        services.AddDbContext<RailWayLineDbContext>(options =>
+    options.UseSqlServer(connStr));
+        services.AddScoped<IRailWayLineRepository, RailWayLineRepository>();
         services.AddScoped<IRailwayService, RailwayService>();
+
+
     }
 
 }

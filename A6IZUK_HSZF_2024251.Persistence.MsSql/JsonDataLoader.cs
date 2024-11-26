@@ -4,13 +4,13 @@ namespace A6IZUK_HSZF_2024251.Persistence.MsSql
 {
     public class JsonDataLoader 
     {
-        public static List<RailwayLine> LoadRailwayLinesFromJson(string filePath)
+        public static List<RailwayLineRaw> LoadRailwayLinesFromJson(string filePath)
         {
-            var railwayLines = new List<RailwayLine>();
+            var railwayLines = new List<RailwayLineRaw>();
             try
             {
                 var json = File.ReadAllText(filePath);
-                railwayLines = JsonConvert.DeserializeObject<List<RailwayLine>>(json);
+                railwayLines = JsonConvert.DeserializeObject<List<RailwayLineRaw>>(json);
                 ;
             }
             catch (Exception ex)
